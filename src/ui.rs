@@ -23,7 +23,7 @@ fn ui_setup(mut commands: Commands) {
   
 }
 
-fn spawn_text_in_ui(mut commands: Commands, assets: Res<AssetServer>) {
+fn spawn_text_in_ui(mut commands: Commands) {
   commands.spawn((
     Node {
       position_type: PositionType::Absolute,
@@ -31,16 +31,36 @@ fn spawn_text_in_ui(mut commands: Commands, assets: Res<AssetServer>) {
       right: px(1160.0),
       ..default()
     },
-    Text::new("Score"),
+    Text::new("Score: 0"),
     TextColor(Color::BLACK),
     TextLayout::new_with_justify(Justify::Center),
+    ScoreText,
   ));
+}
+
+#[derive(Resource, Default)]
+pub struct Score(pub u32);
+
+ #[derive(Component)]
+ struct ScoreText;
+
+fn update_score_text(
+    score: Res<Score>,
+    mut query: Query<&mut Text, With<ScoreText>>,
+) {
+    if score.is_changed() {
+        for mut text in &mut query {
+            text.0 = format!("Score: {}", score.0);
+        }
+    }
 }
 
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (ui_setup, spawn_text_in_ui));
+        app.init_resource::<Score>()
+            .add_systems(Startup, (ui_setup, spawn_text_in_ui))
+            .add_systems(Update, update_score_text);
     }
 }

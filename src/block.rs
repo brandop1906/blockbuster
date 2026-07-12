@@ -3,6 +3,7 @@ use bevy_rapier2d::prelude::*;
 use rand::{Rng, RngExt};
 
 use crate::ball::Ball;
+use crate::ui::Score;
 
 
 const BLOCK_SIZE: Vec2 = Vec2::new(50.0, 20.0);
@@ -81,6 +82,7 @@ fn despawn_blocks(
     balls: Query<Entity, With<Ball>>,
     blocks: Query<&Block>,
     mut occupied: ResMut<OccupiedCells>,
+    mut score: ResMut<Score>,
 ) {
     for event in collision_events.read() {
         match event {
@@ -91,12 +93,12 @@ fn despawn_blocks(
 
                 if ball_hit_block {
                     let block_id = if blocks.contains(*e1) { *e1 } else { *e2 };
-                    
+
                     if let Ok(block) = blocks.get(block_id) {
                         occupied.0.remove(&block.cell);
                     }
-
-                    commands.entity(block_id).despawn()
+                    commands.entity(block_id).despawn();
+                    score.0 += 1;
                 }
             }
             CollisionEvent::Stopped(_, _, _) => {
