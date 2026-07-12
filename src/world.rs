@@ -62,32 +62,6 @@ fn wall_setup(
     ));
 }
 
-fn despawn_balls(
-    mut collision_events: MessageReader<CollisionEvent>,
-    mut commands: Commands,
-    balls: Query<Entity, With<Ball>>,
-    bottom_wall: Query<(), With<BottomWall>>,
-) {
-    for event in collision_events.read() {
-        match event {
-            CollisionEvent::Started(e1, e2, _) => {
-                // Check if ball hit block
-                let ball_hit_bottom_wall = 
-                    (balls.contains(*e1) && bottom_wall.contains(*e2)) ||
-                    (balls.contains(*e2) && bottom_wall.contains(*e1));
-
-                if ball_hit_bottom_wall {
-                    let ball_id = if balls.contains(*e1) { *e1 } else { *e2 };
-                    commands.entity(ball_id).despawn();
-                    }
-                }
-            CollisionEvent::Stopped(_, _, _) => {
-                // Handle collision stop if needed
-            }
-        }
-    }
-}
-
 fn detect_collisions(
     mut collision_events: MessageReader<CollisionEvent>,
     balls: Query<&mut Velocity, With<Ball>>,
@@ -153,6 +127,6 @@ impl Plugin for WorldPlugin {
         app
             .insert_resource(CollisionCounter {spawn_cooldown: Timer::from_seconds(0.2, TimerMode::Once)})
             .add_systems(Startup, (setup_graphics, wall_setup))
-            .add_systems(Update, (despawn_balls, detect_collisions));
+            .add_systems(Update, detect_collisions);
     }
 }

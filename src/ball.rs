@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use bevy::mesh::CircleMeshBuilder;
+use crate::world::BottomWall;
 
 #[derive(Component)]
 pub struct Ball;
@@ -40,10 +41,36 @@ fn maintain_ball_velocity(
 ) {
     for mut vel in balls {
         let speed = vel.linear.length();
-        let min_speed = 300.0;
+        let min_speed = 500.0;
 
         if speed < min_speed && speed > 0.0 {
             vel.linear = vel.linear.normalize() * min_speed;
+        }
+    }
+}
+
+fn despawn_balls(
+    mut collision_events: MessageReader<CollisionEvent>,
+    mut commands: Commands,
+    balls: Query<Entity, With<Ball>>,
+    bottom_wall: Query<(), With<BottomWall>>,
+) {
+    for event in collision_events.read() {
+        match event {
+            CollisionEvent::Started(e1, e2, _) => {
+                // Check if ball hit block
+                let ball_hit_bottom_wall = 
+                    (balls.contains(*e1) && bottom_wall.contains(*e2)) ||
+                    (balls.contains(*e2) && bottom_wall.contains(*e1));
+
+                if ball_hit_bottom_wall {
+                    let ball_id = if balls.contains(*e1) { *e1 } else { *e2 };
+                    commands.entity(ball_id).despawn();
+                    }
+                }
+            CollisionEvent::Stopped(_, _, _) => {
+                // Handle collision stop if needed
+            }
         }
     }
 }
@@ -54,6 +81,6 @@ impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_systems(Startup,ball_setup)
-            .add_systems(Update, maintain_ball_velocity);
+            .add_systems(Update, (maintain_ball_velocity, despawn_balls));
     }
 }
