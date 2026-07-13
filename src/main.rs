@@ -8,12 +8,14 @@ use crate::block::BlockPlugin;
 use crate::paddle::*;
 use crate::world::*;
 use crate::ui::*;
+use crate::audio::AudioPlugin;
 
 mod paddle;
 mod world;
 mod ball;
 mod ui;
 mod block;
+mod audio;
 
 const BACKGROUND_COLOR: Color = Color::srgb(0.25, 0.25, 0.25);
 fn main() {
@@ -37,6 +39,7 @@ fn main() {
         .add_plugins(PaddlePlugin)
         .add_plugins(BallPlugin)
         .add_plugins(BlockPlugin)
+        .add_plugins(AudioPlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .run();
 }

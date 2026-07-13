@@ -4,6 +4,7 @@ use rand::{Rng, RngExt};
 
 use crate::ball::Ball;
 use crate::ui::Score;
+use crate::audio::play_block_destroyed_audio;
 
 
 const BLOCK_SIZE: Vec2 = Vec2::new(50.0, 20.0);
@@ -55,6 +56,10 @@ fn spawn_blocks(
         let (i, j) = free[rng.random_range(0..free.len())];
         occupied.0.insert((i, j));
 
+        let red_random: f32 = rng.random_range(0.0..1.0);
+        let green_random: f32 = rng.random_range(0.0..1.0);
+        let blue_random: f32 = rng.random_range(0.0..1.0);
+
         let pos = Vec2::new(
             SPAWN_MIN.x + cell.x * (i as f32 + 0.5),
             SPAWN_MIN.y + cell.y * (j as f32 + 0.5),
@@ -63,7 +68,7 @@ fn spawn_blocks(
         commands.spawn((
             Block { cell: (i, j) },
             Sprite {
-                color: Color::srgb(1.0, 0.5, 0.5),
+                color: Color::srgb(red_random, green_random, blue_random),
                 custom_size: Some(BLOCK_SIZE),
                 ..default()
             },
@@ -83,6 +88,7 @@ fn despawn_blocks(
     blocks: Query<&Block>,
     mut occupied: ResMut<OccupiedCells>,
     mut score: ResMut<Score>,
+    asset_server: Res<AssetServer>,
 ) {
     for event in collision_events.read() {
         match event {
@@ -98,6 +104,7 @@ fn despawn_blocks(
                         occupied.0.remove(&block.cell);
                     }
                     commands.entity(block_id).despawn();
+                    play_block_destroyed_audio(&asset_server, &mut commands);
                     score.0 += 1;
                 }
             }

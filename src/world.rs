@@ -3,6 +3,7 @@ use bevy_rapier2d::prelude::*;
 use crate::ball::*;
 use crate::paddle::*;
 use bevy::mesh::CircleMeshBuilder;
+use rand::RngExt;
 
 #[derive(Component)]
 pub struct BottomWall;
@@ -86,11 +87,16 @@ fn detect_collisions(
                         counter.spawn_cooldown.reset();
 
                         // Ball
+                        let mut rng = rand::rng();
+                        let red_random: f32 = rng.random_range(0.0..1.0);
+                        let green_random: f32 = rng.random_range(0.0..1.0);
+                        let blue_random: f32 = rng.random_range(0.0..1.0);
+
                         let circle_mesh = CircleMeshBuilder::new(16.0, 64).build();
 
                         let mesh_handle = meshes.add(circle_mesh);
 
-                        let circle_material = materials.add(Color::srgb(1.0, 0.0, 0.0));
+                        let circle_material = materials.add(Color::srgb(red_random, green_random, blue_random));
                         commands.spawn((
                             Mesh2d(mesh_handle),
                             MeshMaterial2d(circle_material),

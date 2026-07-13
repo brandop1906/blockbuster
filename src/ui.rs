@@ -28,7 +28,7 @@ fn spawn_text_in_ui(mut commands: Commands) {
     Node {
       position_type: PositionType::Absolute,
       bottom: px(680.0),
-      right: px(1160.0),
+      right: px(1140.0),
       ..default()
     },
     Text::new("Score: 0"),
